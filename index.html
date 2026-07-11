@@ -101,7 +101,31 @@ async function dbPut(path, value) {
   return await res.json();
 }
 async function loadRoom(code) {
-  try { return await dbGet(`rooms/${code}`); } catch (e) { return null; }
+  try {
+    const r = await dbGet(`rooms/${code}`);
+    return normalizeRoom(r);
+  } catch (e) { return null; }
+}
+function normalizeRoom(r) {
+  if (!r) return r;
+  r.scores = r.scores || {};
+  r.bombHits = r.bombHits || {};
+  r.chairsUsed = r.chairsUsed || [];
+  r.log = r.log || [];
+  r.players = r.players || [];
+  r.pending = r.pending || {};
+  r.pending.phase = r.pending.phase || null;
+  r.pending.bomberName = r.pending.bomberName || null;
+  r.pending.sitterName = r.pending.sitterName || null;
+  r.pending.commitment = r.pending.commitment || null;
+  r.pending.sitChair = (r.pending.sitChair === undefined) ? null : r.pending.sitChair;
+  r.turnOrder = r.turnOrder || { top: null, bottom: null };
+  r.jankenWinner = (r.jankenWinner === undefined) ? null : r.jankenWinner;
+  r.winner = (r.winner === undefined) ? null : r.winner;
+  r.reason = r.reason || null;
+  r.suddenDeath = !!r.suddenDeath;
+  r.finished = !!r.finished;
+  return r;
 }
 async function saveRoom(code, room) {
   room.updatedAt = Date.now();
